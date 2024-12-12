@@ -8,15 +8,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Adicionar repositório do QGIS primeiro
 RUN apt-get update && apt-get install -y \
     software-properties-common \
-    && add-apt-repository ppa:ubuntugis/ppa
+    wget \
+    gnupg \
+    && wget -qO - https://qgis.org/downloads/qgis-2023.gpg.key | gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/qgis-archive.gpg --import \
+    && chmod a+r /etc/apt/trusted.gpg.d/qgis-archive.gpg \
+    && add-apt-repository "deb https://qgis.org/ubuntu $(lsb_release -c -s) main"
 
 # Instalar dependências necessárias
 RUN apt-get update && apt-get install -y \
-    python3.10 \
-    python3.10-dev \
-    python3-pip \
     python3-qgis \
     qgis-server \
+    python3-pip \
     xvfb \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -24,7 +26,6 @@ RUN apt-get update && apt-get install -y \
 # Atualizar pip e instalar bibliotecas Python
 RUN python3 -m pip install --upgrade pip && \
     pip3 install \
-    pyqgis \
     requests \
     fastapi \
     uvicorn
